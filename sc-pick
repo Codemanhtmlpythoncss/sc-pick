@@ -190,8 +190,23 @@ play() { # url...
   ensure_player || return 0
   echo "Space = pause   ←/→ = seek   > = next   q = stop"
   echo
-  mpv --no-video --really-quiet --term-osd-bar \
-    --script-opts="ytdl_hook-ytdl_path=$(command -v yt-dlp)" "$@" || true
+  local errf rc=0
+  errf="$(mktemp)"
+  mpv --no-video --really-quiet --term-osd-bar --msg-level=all=error \
+    --script-opts="ytdl_hook-ytdl_path=$(command -v yt-dlp)" "$@" 2>"$errf" || rc=$?
+  if (( rc != 0 )) || [[ -s "$errf" ]]; then
+    echo
+    cat "$errf"
+    if grep -q "DRM" "$errf"; then
+      echo "✗ This track is DRM protected, so it can't be played here."
+    elif grep -qiE "audio output|\bao\b|alsa|pulse|pipewire" "$errf"; then
+      echo "✗ No sound device found. Plug in speakers/headphones, or run sc-pick on your computer."
+    elif (( rc != 0 )); then
+      echo "✗ Playback failed (error above)."
+    fi
+    pause
+  fi
+  rm -f "$errf"
 }
 
 is_liked() { cut -f5 "$LIKES" | grep -qxF "$1"; }
