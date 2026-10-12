@@ -6,8 +6,9 @@ Only download tracks you own or have permission/licence to download.
 
 ## Requirements
 
-Just `bash` and `curl`. On first run, sc-pick installs anything missing
-([soundcloud-cli](https://github.com/tamnd/soundcloud-cli), [yt-dlp](https://github.com/yt-dlp/yt-dlp),
+`bash`, `curl` and the `sdownload` command are required. Install `sdownload` on the same computer first; sc-pick calls it
+for downloads and needs its `--output-dir` and `--archive-file` options. On first run, sc-pick installs the search and
+playback helpers ([soundcloud-cli](https://github.com/tamnd/soundcloud-cli), [yt-dlp](https://github.com/yt-dlp/yt-dlp),
 and Go if needed to build soundcloud-cli) into `~/.local/share/sc-pick/` — no sudo required.
 
 ## Install
@@ -38,7 +39,7 @@ turn on direct downloads in the track settings on soundcloud.com and sc-pick wil
 fetch the original file.
 
 Results you've downloaded are marked `✓`, liked ones `♥`. Tracks are never downloaded twice,
-even inside playlists, thanks to the yt-dlp archive.
+even inside playlists, thanks to the shared archive passed to sdownload.
 
 Playlists go into their own subfolder. Liked list, log and archive live in `~/.local/share/sc-pick/`.
 
