@@ -42,9 +42,56 @@ while getopts "pkd:n:lh" opt; do
 done
 shift $((OPTIND - 1))
 
-for cmd in soundcloud yt-dlp; do
-  command -v "$cmd" >/dev/null || { echo "missing: $cmd (see README)" >&2; exit 1; }
-done
+# Missing tools are installed into $DATA, so no sudo or PATH setup is needed.
+BIN="$DATA/bin"
+export PATH="$BIN:$DATA/go/bin:$HOME/go/bin:/usr/local/go/bin:$PATH"
+mkdir -p "$BIN"
+
+platform() {
+  local os arch
+  os="$(uname -s | tr '[:upper:]' '[:lower:]')"
+  case "$(uname -m)" in
+    x86_64|amd64)  arch=amd64 ;;
+    aarch64|arm64) arch=arm64 ;;
+    armv6l|armv7l) arch=armv6l ;;
+    *) echo "unsupported CPU: $(uname -m)" >&2; exit 1 ;;
+  esac
+  echo "$os $arch"
+}
+
+install_go() {
+  local os arch ver
+  read -r os arch <<<"$(platform)"
+  ver="$(curl -fsSL 'https://go.dev/VERSION?m=text' | head -1)"
+  echo "Installing $ver..."
+  rm -rf "$DATA/go"
+  curl -fsSL "https://go.dev/dl/$ver.$os-$arch.tar.gz" | tar -C "$DATA" -xz
+}
+
+install_soundcloud() {
+  command -v go >/dev/null || install_go
+  echo "Installing soundcloud-cli..."
+  GOBIN="$BIN" go install github.com/tamnd/soundcloud-cli/cmd/soundcloud@latest
+}
+
+install_ytdlp() {
+  local os arch file
+  read -r os arch <<<"$(platform)"
+  case "$os-$arch" in
+    linux-amd64)  file=yt-dlp_linux ;;
+    linux-arm64)  file=yt-dlp_linux_aarch64 ;;
+    linux-armv6l) file=yt-dlp_linux_armv7l ;;
+    darwin-*)     file=yt-dlp_macos ;;
+    *) echo "no yt-dlp build for $os-$arch" >&2; exit 1 ;;
+  esac
+  echo "Installing yt-dlp..."
+  curl -fsSL "https://github.com/yt-dlp/yt-dlp/releases/latest/download/$file" -o "$BIN/yt-dlp"
+  chmod +x "$BIN/yt-dlp"
+}
+
+command -v curl >/dev/null || { echo "missing: curl (sudo apt install curl)" >&2; exit 1; }
+command -v soundcloud >/dev/null || install_soundcloud
+command -v yt-dlp >/dev/null || install_ytdlp
 mkdir -p "$DATA"
 touch "$LOG" "$LIKES"
 trap '[[ -n "$TMP" ]] && rm -rf "$TMP" && echo "Deleted temporary downloads."' EXIT

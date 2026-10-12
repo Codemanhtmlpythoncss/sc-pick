@@ -6,8 +6,9 @@ Only download tracks you own or have permission/licence to download.
 
 ## Requirements
 
-- [soundcloud-cli](https://github.com/tamnd/soundcloud-cli): `go install github.com/tamnd/soundcloud-cli/cmd/soundcloud@latest`
-- [yt-dlp](https://github.com/yt-dlp/yt-dlp)
+Just `bash` and `curl`. On first run, sc-pick installs anything missing
+([soundcloud-cli](https://github.com/tamnd/soundcloud-cli), [yt-dlp](https://github.com/yt-dlp/yt-dlp),
+and Go if needed to build soundcloud-cli) into `~/.local/share/sc-pick/` — no sudo required.
 
 ## Install
 
