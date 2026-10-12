@@ -31,14 +31,18 @@ At the prompt:
 | `1 3`   | download results 1 and 3 |
 | `t2`    | temporary download of result 2 (deleted when you quit) |
 | `s`     | new search |
+| `+2`    | like result 2 (saved to your liked list) |
+| `u2`    | unlike result 2 |
+| `k`     | open your liked list (or start with `sc-pick -k`) |
+| `a`     | download everything in the list |
 | `p`     | switch between tracks and playlists |
 | `f`     | change download folder |
 | `l`     | show download log |
 | `q`     | quit |
 
-Results you've already downloaded are marked `✓`. Tracks are never downloaded twice,
+Results you've downloaded are marked `✓`, liked ones `♥`. Tracks are never downloaded twice,
 even inside playlists, thanks to the yt-dlp archive.
 
-Playlists go into their own subfolder. Log and archive live in `~/.local/share/sc-pick/`.
+Playlists go into their own subfolder. Liked list, log and archive live in `~/.local/share/sc-pick/`.
 
 Env vars: `SC_PICK_DIR` (default `~/Music/soundcloud`), `SC_PICK_LIMIT` (default 15).
