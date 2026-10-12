@@ -6,10 +6,11 @@ Only download tracks you own or have permission/licence to download.
 
 ## Requirements
 
-`bash`, `curl` and the `sdownload` command are required. Install `sdownload` on the same computer first; sc-pick calls it
-for downloads and needs its `--output-dir` and `--archive-file` options. On first run, sc-pick installs the search and
-playback helpers ([soundcloud-cli](https://github.com/tamnd/soundcloud-cli), [yt-dlp](https://github.com/yt-dlp/yt-dlp),
-and Go if needed to build soundcloud-cli) into `~/.local/share/sc-pick/` — no sudo required.
+Just `bash` and `curl`. On first run, sc-pick installs everything it needs into `~/.local/share/sc-pick/` — no sudo
+required: the search helper ([soundcloud-cli](https://github.com/tamnd/soundcloud-cli), built with Go, which it also
+installs if missing), [yt-dlp](https://github.com/yt-dlp/yt-dlp), and its own bundled `sdownload` (a yt-dlp wrapper for
+downloads). If you already have a richer `sdownload` on your `PATH` that supports `--output-dir` and `--archive-file`,
+sc-pick uses that one instead.
 
 ## Install
 

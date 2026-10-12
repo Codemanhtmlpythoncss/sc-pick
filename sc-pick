@@ -91,11 +91,44 @@ install_ytdlp() {
   chmod +x "$BIN/yt-dlp"
 }
 
+# sc-pick ships its own sdownload (a yt-dlp wrapper) so downloads work on any machine with no extra install.
+# If you already have a richer sdownload on PATH that supports --output-dir and --archive-file, that one is used instead.
+install_sdownload() {
+  command -v yt-dlp >/dev/null || install_ytdlp
+  echo "Installing bundled sdownload..."
+  cat > "$BIN/sdownload" <<'SD'
+#!/usr/bin/env bash
+# sdownload (bundled by sc-pick): download SoundCloud audio with yt-dlp, honoring --output-dir and --archive-file.
+set -euo pipefail
+out="."; archive=""; urls=()
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --output-dir)   out="$2"; shift 2 ;;
+    --archive-file) archive="$2"; shift 2 ;;
+    -h|--help)
+      echo "usage: sdownload [--output-dir DIR] [--archive-file FILE] URL..."
+      echo "  --output-dir DIR     where to save the audio (default: .)"
+      echo "  --archive-file FILE  skip tracks already recorded in FILE"
+      exit 0 ;;
+    --) shift; while [ $# -gt 0 ]; do urls+=("$1"); shift; done ;;
+    *) urls+=("$1"); shift ;;
+  esac
+done
+[ "${#urls[@]}" -gt 0 ] || { echo "sdownload: no URL given" >&2; exit 2; }
+args=(-f bestaudio/best -x --audio-format mp3 --no-overwrites --no-progress -o "$out/%(uploader)s - %(title)s.%(ext)s")
+[ -n "$archive" ] && args+=(--download-archive "$archive")
+exec yt-dlp "${args[@]}" "${urls[@]}"
+SD
+  chmod +x "$BIN/sdownload"
+  hash -r 2>/dev/null || true   # forget any older sdownload the shell already resolved
+}
+
 command -v curl >/dev/null || { echo "missing: curl (sudo apt install curl)" >&2; exit 1; }
-command -v sdownload >/dev/null || { echo "missing: sdownload (install it on this computer first)" >&2; exit 1; }
-if ! sdownload --help 2>&1 | grep -q -- '--output-dir' || ! sdownload --help 2>&1 | grep -q -- '--archive-file'; then
-  echo "sdownload is too old for sc-pick. Update it to a version with --output-dir and --archive-file support." >&2
-  exit 1
+# Use an existing sdownload only if it supports the flags we need; otherwise install the bundled one into $BIN.
+if ! command -v sdownload >/dev/null \
+  || ! sdownload --help 2>&1 | grep -q -- '--output-dir' \
+  || ! sdownload --help 2>&1 | grep -q -- '--archive-file'; then
+  install_sdownload
 fi
 command -v soundcloud >/dev/null || install_soundcloud
 command -v yt-dlp >/dev/null || install_ytdlp
