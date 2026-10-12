@@ -19,27 +19,22 @@ git clone https://github.com/Codemanhtmlpythoncss/sc-pick && sudo install sc-pic
 ## Usage
 
 ```bash
-sc-pick "my track name"          # search tracks
-sc-pick -p "my playlist"         # search playlists (downloads every track)
-sc-pick -d ~/Music/mine "query"  # choose download folder
-sc-pick -l                       # show what you've downloaded
+sc-pick                          # main menu
+sc-pick "my track name"          # jump straight to track results
+sc-pick -p "my playlist"         # playlist results (downloads every track)
+sc-pick -k                       # open your liked list
+sc-pick -d ~/Music/mine          # choose download folder
+sc-pick -l                       # print download log
 ```
 
-At the prompt:
+Move with the arrow keys (or `j`/`k`), press Enter to choose, `q` or Esc to go back.
+Pick a song, then choose **Download**, **Temporary download** (deleted when you quit),
+**Like**/**Unlike**. The liked list has a **Download all** option. Change the download
+folder from the main menu.
 
-| Input   | Action |
-|---------|--------|
-| `1 3`   | download results 1 and 3 |
-| `t2`    | temporary download of result 2 (deleted when you quit) |
-| `s`     | new search |
-| `+2`    | like result 2 (saved to your liked list) |
-| `u2`    | unlike result 2 |
-| `k`     | open your liked list (or start with `sc-pick -k`) |
-| `a`     | download everything in the list |
-| `p`     | switch between tracks and playlists |
-| `f`     | change download folder |
-| `l`     | show download log |
-| `q`     | quit |
+Tracks SoundCloud only streams with DRM can't be downloaded. For your own tracks,
+turn on direct downloads in the track settings on soundcloud.com and sc-pick will
+fetch the original file.
 
 Results you've downloaded are marked `✓`, liked ones `♥`. Tracks are never downloaded twice,
 even inside playlists, thanks to the yt-dlp archive.
