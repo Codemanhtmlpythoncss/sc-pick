@@ -12,7 +12,7 @@ Only download tracks you own or have permission/licence to download.
 ## Install
 
 ```bash
-git clone <this repo> && sudo install sc-pick/sc-pick /usr/local/bin/
+git clone https://github.com/Codemanhtmlpythoncss/sc-pick && sudo install sc-pick/sc-pick /usr/local/bin/
 ```
 
 ## Usage
