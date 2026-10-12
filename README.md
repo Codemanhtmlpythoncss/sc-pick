@@ -28,8 +28,9 @@ sc-pick -l                       # print download log
 ```
 
 Move with the arrow keys (or `j`/`k`), press Enter to choose, `q` or Esc to go back.
-Pick a song, then choose **Download**, **Temporary download** (deleted when you quit),
-**Like**/**Unlike**. The liked list has a **Download all** option. Change the download
+Pick a song, then choose **Play**, **Download**, **Temporary download** (deleted when you quit),
+**Like**/**Unlike**. The liked list has **Play all** and **Download all** options. Playing uses
+[mpv](https://mpv.io), which sc-pick installs on first play (asks for your sudo password on Linux). Change the download
 folder from the main menu.
 
 Tracks SoundCloud only streams with DRM can't be downloaded. For your own tracks,

@@ -174,6 +174,26 @@ download() { # url kind artist title temp
   rm -f "$errf"
 }
 
+# Stream with mpv (which uses yt-dlp), installing it if needed.
+ensure_player() {
+  command -v mpv >/dev/null && return 0
+  echo "Installing mpv to play audio..."
+  if command -v apt-get >/dev/null; then
+    sudo apt-get install -y mpv
+  elif command -v brew >/dev/null; then
+    brew install mpv
+  fi
+  command -v mpv >/dev/null || { echo "✗ Couldn't install mpv — install it yourself to play songs."; return 1; }
+}
+
+play() { # url...
+  ensure_player || return 0
+  echo "Space = pause   ←/→ = seek   > = next   q = stop"
+  echo
+  mpv --no-video --really-quiet --term-osd-bar \
+    --script-opts="ytdl_hook-ytdl_path=$(command -v yt-dlp)" "$@" || true
+}
+
 is_liked() { cut -f5 "$LIKES" | grep -qxF "$1"; }
 is_downloaded() { cut -f5 "$LOG" | grep -qxF "$1"; }
 
@@ -223,7 +243,7 @@ browse() { # heading likes(0/1)
       pause; return
     fi
     labels=() offset=0
-    if [[ "$likes" == 1 ]]; then labels+=("⬇  Download all"); offset=1; fi
+    if [[ "$likes" == 1 ]]; then labels+=("▶  Play all" "⬇  Download all"); offset=2; fi
     for i in "${!urls[@]}"; do
       mark=""
       is_downloaded "${urls[$i]}" && mark+="✓" || mark+=" "
@@ -233,7 +253,10 @@ browse() { # heading likes(0/1)
     menu "$heading   (✓ downloaded  ♥ liked)" "$sel" "${labels[@]}"
     (( PICK < 0 )) && return
     sel=$PICK
-    if (( offset == 1 && PICK == 0 )); then
+    if (( offset == 2 && PICK == 0 )); then
+      play "${urls[@]}"; continue
+    fi
+    if (( offset == 2 && PICK == 1 )); then
       for i in "${!urls[@]}"; do
         download "${urls[$i]}" "${kinds[$i]}" "${artists[$i]}" "${titles[$i]}" 0
       done
@@ -247,11 +270,12 @@ actions() { # index
   local n="$1" like_label
   if is_liked "${urls[$n]}"; then like_label="♡  Unlike"; else like_label="♥  Like"; fi
   menu "${artists[$n]} — ${titles[$n]} [${infos[$n]}]" 0 \
-    "⬇  Download to $DIR" "⏱  Temporary download" "$like_label" "←  Back"
+    "▶  Play" "⬇  Download to $DIR" "⏱  Temporary download" "$like_label" "←  Back"
   case "$PICK" in
-    0) download "${urls[$n]}" "${kinds[$n]}" "${artists[$n]}" "${titles[$n]}" 0; pause ;;
-    1) download "${urls[$n]}" "${kinds[$n]}" "${artists[$n]}" "${titles[$n]}" 1; pause ;;
-    2) if is_liked "${urls[$n]}"; then unlike "$n"; else like "$n"; fi ;;
+    0) play "${urls[$n]}" ;;
+    1) download "${urls[$n]}" "${kinds[$n]}" "${artists[$n]}" "${titles[$n]}" 0; pause ;;
+    2) download "${urls[$n]}" "${kinds[$n]}" "${artists[$n]}" "${titles[$n]}" 1; pause ;;
+    3) if is_liked "${urls[$n]}"; then unlike "$n"; else like "$n"; fi ;;
   esac
 }
 
