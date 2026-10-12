@@ -18,9 +18,27 @@ git clone <this repo> && sudo install sc-pick/sc-pick /usr/local/bin/
 ## Usage
 
 ```bash
-sc-pick "my track name"   # or just: sc-pick
+sc-pick "my track name"          # search tracks
+sc-pick -p "my playlist"         # search playlists (downloads every track)
+sc-pick -d ~/Music/mine "query"  # choose download folder
+sc-pick -l                       # show what you've downloaded
 ```
 
-Enter one or more numbers to download, `s` for a new search, `q` to quit.
+At the prompt:
 
-Files go to `~/Music/soundcloud` (override with `SC_PICK_DIR`). Result count: `SC_PICK_LIMIT` (default 15).
+| Input   | Action |
+|---------|--------|
+| `1 3`   | download results 1 and 3 |
+| `t2`    | temporary download of result 2 (deleted when you quit) |
+| `s`     | new search |
+| `p`     | switch between tracks and playlists |
+| `f`     | change download folder |
+| `l`     | show download log |
+| `q`     | quit |
+
+Results you've already downloaded are marked `✓`. Tracks are never downloaded twice,
+even inside playlists, thanks to the yt-dlp archive.
+
+Playlists go into their own subfolder. Log and archive live in `~/.local/share/sc-pick/`.
+
+Env vars: `SC_PICK_DIR` (default `~/Music/soundcloud`), `SC_PICK_LIMIT` (default 15).
