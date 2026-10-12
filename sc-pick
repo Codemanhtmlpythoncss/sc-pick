@@ -98,24 +98,38 @@ install_sdownload() {
   echo "Installing bundled sdownload..."
   cat > "$BIN/sdownload" <<'SD'
 #!/usr/bin/env bash
-# sdownload (bundled by sc-pick): download SoundCloud audio with yt-dlp, honoring --output-dir and --archive-file.
+# sdownload (bundled by sc-pick): download authorized SoundCloud tracks with yt-dlp. These options mirror the standalone
+# sdownload command exactly — best audio kept in its own format (no re-encode), SoundCloud artwork + metadata embedded,
+# "Artist - Title [id].ext" naming, resumable, retry-heavy, and archive-aware. Needs ffmpeg for the embedding step.
 set -euo pipefail
-out="."; archive=""; urls=()
+out="${SDOWNLOAD_DIR:-$HOME/Downloads/Music}"
+archive=""; artwork=1; urls=()
 while [ $# -gt 0 ]; do
   case "$1" in
-    --output-dir)   out="$2"; shift 2 ;;
-    --archive-file) archive="$2"; shift 2 ;;
+    --output-dir)     out="$2"; shift 2 ;;
+    --archive-file)   archive="$2"; shift 2 ;;
+    --archive)        archive="__default__"; shift ;;
+    --no-artwork)     artwork=0; shift ;;
+    --allow-any-site) shift ;;   # accepted for compatibility; sc-pick only passes SoundCloud URLs
     -h|--help)
-      echo "usage: sdownload [--output-dir DIR] [--archive-file FILE] URL..."
-      echo "  --output-dir DIR     where to save the audio (default: .)"
+      echo "usage: sdownload [--output-dir DIR] [--archive-file FILE] [--archive] [--no-artwork] [--allow-any-site] URL..."
+      echo "  --output-dir DIR     where to save audio (default: \$SDOWNLOAD_DIR or ~/Downloads/Music)"
       echo "  --archive-file FILE  skip tracks already recorded in FILE"
+      echo "  --archive            use DIR/.sdownload-archive.txt as the archive"
+      echo "  --no-artwork         do not embed SoundCloud artwork"
+      echo "  --allow-any-site     accept non-SoundCloud URLs too"
       exit 0 ;;
     --) shift; while [ $# -gt 0 ]; do urls+=("$1"); shift; done ;;
     *) urls+=("$1"); shift ;;
   esac
 done
 [ "${#urls[@]}" -gt 0 ] || { echo "sdownload: no URL given" >&2; exit 2; }
-args=(-f bestaudio/best -x --audio-format mp3 --no-overwrites --no-progress -o "$out/%(uploader)s - %(title)s.%(ext)s")
+[ "$archive" = "__default__" ] && archive="$out/.sdownload-archive.txt"
+mkdir -p "$out"
+args=(-f bestaudio/best --ignore-errors --windows-filenames --continue
+      --retries 10 --fragment-retries 10 --concurrent-fragments 4 --embed-metadata
+      -o "$out/%(uploader|Unknown Artist)s - %(title).200B [%(id)s].%(ext)s")
+[ "$artwork" = 1 ] && args+=(--write-thumbnail --embed-thumbnail)
 [ -n "$archive" ] && args+=(--download-archive "$archive")
 exec yt-dlp "${args[@]}" "${urls[@]}"
 SD
